@@ -1,0 +1,32 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+[0-9]    { printf("Digit\n"); }
+.|\n     { /* ignore all other characters */ }
+%%
+
+int yywrap(void) {
+    return 1;
+}
+
+int main() {
+    printf("Enter the string: ");
+    yylex();
+    return 0;
+}
+
+
+Steps to Compile and Run (Linux/macOS Terminal)
+lex digit.l
+gcc lex.yy.c -o digit -ll
+./digit
+
+Sample Input:
+8
+
+Sample Output:
+Enter the string: 
+8
+Digit
