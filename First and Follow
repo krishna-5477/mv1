@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX 20
+
+int n; 
+char production[MAX][MAX];
+char firstSet[26][MAX];
+char followSet[26][MAX];
+
+void findFirst(char c);
+void findFollow(char c);
+void addToResult(char result[], char val);
+int isTerminal(char c);
+
+void addToResult(char result[], char val) {
+    int i;
+    for (i = 0; result[i] != '\0'; i++) {
+        if (result[i] == val)
+            return;
+    }
+    result[i] = val;
+    result[i + 1] = '\0';
+}
+
+// Function to find FIRST set of a given non-terminal
+void findFirst(char c) {
+    if (!isupper(c)) {
+        addToResult(firstSet[c - 'A'], c);
+        return;
+    }
+
+    for (int i = 0; i < n; i++) {
+        if (production[i][0] == c) {
+            char rhs = production[i][2];
+            if (rhs == '#')
+                addToResult(firstSet[c - 'A'], '#');
+            else if (islower(rhs))
+                addToResult(firstSet[c - 'A'], rhs);
+            else
+                findFirst(rhs);
+        }
+    }
+}
+
+// Function to find FOLLOW set of a non-terminal
+void findFollow(char c) {
+    if (production[0][0] == c)
+        addToResult(followSet[c - 'A'], '$');
+
+    for (int i = 0; i < n; i++) {
+        int len = strlen(production[i]);
+        for (int j = 2; j < len; j++) {
+            if (production[i][j] == c) {
+                if (production[i][j + 1] != '\0') {
+                    char next = production[i][j + 1];
+                    if (isupper(next)) {
+                        strcat(followSet[c - 'A'], firstSet[next - 'A']);
+                    } else {
+                        addToResult(followSet[c - 'A'], next);
+                    }
+                }
+                if (production[i][j + 1] == '\0' && c != production[i][0])
+                    findFollow(production[i][0]);
+            }
+        }
+    }
+}
+
+int main() {
+    printf("Enter number of productions: ");
+    scanf("%d", &n);
+
+    printf("Enter the productions (e.g., E=TR):\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%s", production[i]);
+    }
+
+    printf("\n--- FIRST sets ---\n");
+    for (int i = 0; i < n; i++) {
+        findFirst(production[i][0]);
+        printf("FIRST(%c) = { %s }\n", production[i][0], firstSet[production[i][0] - 'A']);
+    }
+
+    printf("\n--- FOLLOW sets ---\n");
+    for (int i = 0; i < n; i++) {
+        findFollow(production[i][0]);
+        printf("FOLLOW(%c) = { %s }\n", production[i][0], followSet[production[i][0] - 'A']);
+    }
+
+    return 0;
+}
+
+Sample Input:
+Enter number of productions: 4
+Enter the productions (e.g., E=TR):
+E=TR
+R=+TR
+R=#
+T=FY
+
+Expected Output:
+--- FIRST sets ---
+FIRST(E) = { t }
+FIRST(R) = { +, # }
+FIRST(T) = { f }
+FIRST(Y) = { y }
+
+--- FOLLOW sets ---
+FOLLOW(E) = { $, ) }
+FOLLOW(R) = { $, ) }
+FOLLOW(T) = { +, $, ) }
+FOLLOW(Y) = { +, $, ) }
