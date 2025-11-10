@@ -1,0 +1,31 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+"3cse1"     { printf("*"); }
+.|\n        { /* ignore other characters */ }
+%%
+
+int yywrap(void) {
+    return 1;
+}
+
+int main() {
+    printf("Enter the string: ");
+    yylex();
+    return 0;
+}
+
+Steps to Compile and Run (Linux/macOS Terminal)
+lex cse1.l
+gcc lex.yy.c -o cse1 -ll
+./cse1
+
+Sample Input:
+3cse13cse13cse1
+
+Sample Output:
+Enter the string: 
+3cse13cse13cse1
+***
