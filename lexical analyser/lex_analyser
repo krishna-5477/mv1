@@ -1,0 +1,107 @@
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+
+// Function to check if a character is a delimiter
+bool isDelimiter(char ch) {
+    return (ch == ' ' || ch == '+' || ch == '-' || ch == '*' ||
+            ch == '/' || ch == ',' || ch == ';' || ch == '>' ||
+            ch == '<' || ch == '=' || ch == '(' || ch == ')' ||
+            ch == '[' || ch == ']' || ch == '{' || ch == '}' ||
+            ch == '\n' || ch == '\t');
+}
+
+// Function to check if a character is an operator
+bool isOperator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/' ||
+            ch == '>' || ch == '<' || ch == '=');
+}
+
+// Function to check if a string is a keyword
+bool isKeyword(char *str) {
+    char keywords[32][10] = {
+        "auto", "break", "case", "char", "const", "continue",
+        "default", "do", "double", "else", "enum", "extern",
+        "float", "for", "goto", "if", "int", "long", "register",
+        "return", "short", "signed", "sizeof", "static", "struct",
+        "switch", "typedef", "union", "unsigned", "void", "volatile",
+        "while"
+    };
+    for (int i = 0; i < 32; ++i) {
+        if (strcmp(keywords[i], str) == 0)
+            return true;
+    }
+    return false;
+}
+
+// Function to check if a string is a valid identifier
+bool isValidIdentifier(char *str) {
+    if (str == NULL || !isalpha(str[0]))
+        return false;
+    for (int i = 1; i < strlen(str); i++) {
+        if (!isalnum(str[i]))
+            return false;
+    }
+    return true;
+}
+
+// Function to perform lexical analysis
+void lexicalAnalyzer(char *str) {
+    int left = 0, right = 0;
+    int len = strlen(str);
+    char subStr[100];
+
+    while (right <= len && left <= right) {
+        if (!isDelimiter(str[right])) {
+            right++;
+        }
+        if (isDelimiter(str[right]) && left == right) {
+            if (isOperator(str[right])) {
+                printf("Operator: %c\n", str[right]);
+            } else if (str[right] != ' ' && str[right] != '\n' && str[right] != '\t') {
+                printf("Delimiter: %c\n", str[right]);
+            }
+            right++;
+            left = right;
+        } else if ((isDelimiter(str[right]) && left != right) ||
+                   (right == len && left != right)) {
+            strncpy(subStr, str + left, right - left);
+            subStr[right - left] = '\0';
+
+            if (isKeyword(subStr)) {
+                printf("Keyword: %s\n", subStr);
+            } else if (isValidIdentifier(subStr)) {
+                printf("Identifier: %s\n", subStr);
+            } else if (isdigit(subStr[0]) && !isValidIdentifier(subStr)) {
+                printf("Literal (Numeric): %s\n", subStr);
+            } else {
+                printf("Invalid Token: %s\n", subStr);
+            }
+            left = right;
+        }
+    }
+}
+
+int main() {
+    char input_string[1000];
+    printf("Enter the C code to analyze:\n");
+    fgets(input_string, sizeof(input_string), stdin);
+
+    printf("\nTokens found:\n");
+    lexicalAnalyzer(input_string);
+
+    return 0;
+}
+
+
+Sample Input:
+float m = 2.0;
+
+Sample Output:
+Tokens found:
+Keyword: float
+Identifier: m
+Operator: =
+Literal (Numeric): 2.0
+Delimiter: ;
