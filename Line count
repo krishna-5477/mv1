@@ -1,0 +1,41 @@
+%{
+#include <stdio.h>
+int lineno = 0, wordno = 0, charno = 0;
+%}
+
+%%
+[ \t]+             { /* skip spaces and tabs */ }
+\n                 { lineno++; charno++; } 
+[A-Za-z0-9]+       { wordno++; charno += yyleng; }
+.                  { charno++; }
+%%
+
+int main() {
+    printf("Enter the text (Press Ctrl+D or Ctrl+Z to end input):\n");
+    yylex();
+    printf("\nLine count      = %d", lineno);
+    printf("\nWord count      = %d", wordno);
+    printf("\nCharacter count = %d\n", charno);
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+Steps to Compile and Run (Linux/macOS Terminal)
+lex wordcount.l
+gcc lex.yy.c -o wordcount -ll
+./wordcount
+
+Sample Input:
+Hello World
+Lex is powerful
+
+Sample Output:
+Enter the text (Press Ctrl+D or Ctrl+Z to end input):
+
+Line count      = 2
+Word count      = 4
+Character count = 26
+
