@@ -1,0 +1,154 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+char stack[50];
+int top = -1;
+
+void push(char c) {
+    stack[++top] = c;
+}
+
+char pop() {
+    if (top == -1)
+        return '\0';
+    return stack[top--];
+}
+
+char peek() {
+    if (top == -1)
+        return '\0';
+    return stack[top];
+}
+
+// Function to display the parsing step
+void displayStackAndInput(char *input, int index) {
+    printf("\nStack: ");
+    for (int i = 0; i <= top; i++)
+        printf("%c", stack[i]);
+    printf("\tInput: %s\t", &input[index]);
+}
+
+int main() {
+    char input[50];
+    int i = 0;
+
+    printf("Grammar used:\n");
+    printf("E -> T E'\n");
+    printf("E' -> + T E' | ε\n");
+    printf("T -> F T'\n");
+    printf("T' -> * F T' | ε\n");
+    printf("F -> (E) | i\n\n");
+
+    printf("Enter the input string (end with $): ");
+    scanf("%s", input);
+
+    push('$');
+    push('E');
+
+    printf("\nParsing Steps:\n");
+
+    while (input[i] != '\0') {
+        displayStackAndInput(input, i);
+        char topSymbol = peek();
+        char currentInput = input[i];
+
+        if (topSymbol == currentInput) {
+            printf("Action: Match %c", currentInput);
+            pop();
+            i++;
+        }
+        else if (topSymbol == 'E') {
+            printf("Action: E → T E'");
+            pop();
+            push('\''); // E'
+            push('T');
+        }
+        else if (topSymbol == '\'') { // Represents E'
+            if (currentInput == '+') {
+                printf("Action: E' → + T E'");
+                pop();
+                push('\'');
+                push('T');
+                push('+');
+            } else {
+                printf("Action: E' → ε");
+                pop();
+            }
+        }
+        else if (topSymbol == 'T') {
+            printf("Action: T → F T'");
+            pop();
+            push('"'); // T'
+            push('F');
+        }
+        else if (topSymbol == '"') { // Represents T'
+            if (currentInput == '*') {
+                printf("Action: T' → * F T'");
+                pop();
+                push('"');
+                push('F');
+                push('*');
+            } else {
+                printf("Action: T' → ε");
+                pop();
+            }
+        }
+        else if (topSymbol == 'F') {
+            if (currentInput == 'i') {
+                printf("Action: F → i");
+                pop();
+                push('i');
+            } else if (currentInput == '(') {
+                printf("Action: F → (E)");
+                pop();
+                push(')');
+                push('E');
+                push('(');
+            } else {
+                printf("Error: Invalid symbol for F");
+                exit(0);
+            }
+        }
+        else {
+            printf("Error: Invalid symbol or mismatch");
+            exit(0);
+        }
+
+        if (top == -1 && input[i] == '$') {
+            printf("\n\nString accepted successfully!\n");
+            return 0;
+        }
+    }
+
+    if (top == -1 && input[i] == '\0')
+        printf("\n\nString accepted successfully!\n");
+    else
+        printf("\n\nString rejected!\n");
+
+    return 0;
+}
+
+Sample Input:
+Enter the input string (end with $): i*i+i$
+
+Sample Output:
+Parsing Steps:
+Stack: $E     Input: i*i+i$   Action: E → T E'
+Stack: $'T    Input: i*i+i$   Action: T → F T'
+Stack: $'"F   Input: i*i+i$   Action: F → i
+Stack: $'"i   Input: i*i+i$   Action: Match i
+Stack: $'"    Input: *i+i$    Action: T' → * F T'
+Stack: $'"F*  Input: *i+i$    Action: Match *
+Stack: $'"F   Input: i+i$     Action: F → i
+Stack: $'"i   Input: i+i$     Action: Match i
+Stack: $'"    Input: +i$      Action: T' → ε
+Stack: $'     Input: +i$      Action: E' → + T E'
+Stack: $'T+   Input: +i$      Action: Match +
+Stack: $'T    Input: i$       Action: T → F T'
+Stack: $'"F   Input: i$       Action: F → i
+Stack: $'"i   Input: i$       Action: Match i
+Stack: $'"    Input: $        Action: T' → ε
+Stack: $'     Input: $        Action: E' → ε
+Stack: $      Input: $        Action: Match $
+String accepted successfully!
