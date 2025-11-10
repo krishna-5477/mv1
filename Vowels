@@ -1,0 +1,36 @@
+%{
+#include <stdio.h>
+int vowels = 0, consonants = 0;
+%}
+
+%%
+[aeiouAEIOU]      { vowels++; }
+[a-zA-Z]          { consonants++; }
+.|\n              { /* ignore other characters */ }
+%%
+
+int main() {
+    printf("Enter a string: ");
+    yylex();
+    printf("\nNumber of vowels: %d", vowels);
+    printf("\nNumber of consonants: %d\n", consonants);
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+Steps to Run (Linux/Mac Terminal):
+lex vowels.l
+gcc lex.yy.c -o vowels -ll
+./vowels
+
+Sample Input:
+Enter a string:
+Hello World
+
+Sample Output:
+Number of vowels: 3
+Number of consonants: 7
